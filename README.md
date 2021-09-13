@@ -21,8 +21,28 @@ This is a direct conversion from David Anson's [ConvertTo-Jpeg](https://github.c
 Passing parameters:
 
 ```PowerShell
-PS C:\T> .\ConvertTo-Png.ps1 C:\T\Pictures\IMG_1234.HEIC
+PS C:\T> .\ConvertTo-Png.ps1 C:\T\Pictures\IMG_1234.HEIC C:\T\Pictures\IMG_5678.HEIC C:\T\Pictures\IMG_90.PNG
 C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.png
+C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.png
+C:\T\Pictures\IMG_90.PNG [Already PNG]
+```
+
+Pipeline via `dir`:
+
+```PowerShell
+PS C:\T> dir C:\T\Pictures | .\ConvertTo-Png.ps1
+C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.png
+C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.png
+C:\T\Pictures\Kitten.png [Already PNG]
+C:\T\Pictures\Notes.txt [Unsupported]
+```
+
+Pipeline via `Get-ChildItem`:
+
+```PowerShell
+PS C:\T> Get-ChildItem C:\T\Pictures -Filter *.HEIC | .\ConvertTo-Png.ps1
+C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.png
+C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.png
 ```
 
 ## Formats
