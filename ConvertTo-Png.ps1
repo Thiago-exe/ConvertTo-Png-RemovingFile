@@ -10,15 +10,10 @@ Param (
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
             ValueFromRemainingArguments = $true,
-            HelpMessage = "image file name to convert to PNG")]
+            HelpMessage = "Array of image files to convert to PNG")]
         [Alias("FullName")]
-        [String]
-        $File,
-
-        [Parameter(
-            HelpMessage = "Fix extension of PNG files without the .png extension")]
-        [Switch]
-        $FixExtensionIfPng
+        [String[]]
+        $Files
     )
 
     Begin
@@ -50,55 +45,56 @@ Param (
     {
         # Summary of imaging APIs: https://docs.microsoft.com/en-us/windows/uwp/audio-video-camera/imaging
         
-        Write-Host $file -NoNewline
-        try
+        foreach ($file in $Files)
         {
+            Write-Host $file -NoNewline
             try
             {
-                # Get SoftwareBitmap from input file
-                $file = Resolve-Path -LiteralPath $file
-                $inputFile = AwaitOperation ([Windows.Storage.StorageFile]::GetFileFromPathAsync($file)) ([Windows.Storage.StorageFile])
-                $inputFolder = AwaitOperation ($inputFile.GetParentAsync()) ([Windows.Storage.StorageFolder])
-                $inputStream = AwaitOperation ($inputFile.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
-                $decoder = AwaitOperation ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($inputStream)) ([Windows.Graphics.Imaging.BitmapDecoder])
+                try
+                {
+                    # Get SoftwareBitmap from input file
+                    $file = Resolve-Path -LiteralPath $file
+                    $inputFile = AwaitOperation ([Windows.Storage.StorageFile]::GetFileFromPathAsync($file)) ([Windows.Storage.StorageFile])
+                    $inputFolder = AwaitOperation ($inputFile.GetParentAsync()) ([Windows.Storage.StorageFolder])
+                    $inputStream = AwaitOperation ($inputFile.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
+                    $decoder = AwaitOperation ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($inputStream)) ([Windows.Graphics.Imaging.BitmapDecoder])
+                }
+                catch
+                {
+                    # Ignore non-image files
+                    Write-Host " [Unsupported]"
+                    continue
+                }
+                if ($decoder.DecoderInformation.CodecId -eq [Windows.Graphics.Imaging.BitmapDecoder]::PngDecoderId)
+                {
+                    # Skip PNG-encoded files
+                    Write-Host " [Already PNG]"
+                    continue
+                }
+                $bitmap = AwaitOperation ($decoder.GetSoftwareBitmapAsync()) ([Windows.Graphics.Imaging.SoftwareBitmap])
+
+                # Write SoftwareBitmap to output file
+                $outputFileName = $inputFile.Name -replace ($inputFile.FileType + "$"), ".png"
+                $outputFile = AwaitOperation ($inputFolder.CreateFileAsync($outputFileName, [Windows.Storage.CreationCollisionOption]::ReplaceExisting)) ([Windows.Storage.StorageFile])
+                $outputStream = AwaitOperation ($outputFile.OpenAsync([Windows.Storage.FileAccessMode]::ReadWrite)) ([Windows.Storage.Streams.IRandomAccessStream])
+                $encoder = AwaitOperation ([Windows.Graphics.Imaging.BitmapEncoder]::CreateAsync([Windows.Graphics.Imaging.BitmapEncoder]::PngEncoderId, $outputStream)) ([Windows.Graphics.Imaging.BitmapEncoder])
+                $encoder.SetSoftwareBitmap($bitmap)
+                $encoder.IsThumbnailGenerated = $false #PNG encoder doesn't like the thumbnail generation
+
+                # Do it
+                AwaitAction($encoder.FlushAsync())
+                Write-Host " -> $outputFileName"
             }
             catch
             {
-                # Ignore non-image files
-                Write-Host " [Unsupported]"
-                continue
+                # Report full details
+                throw $_.Exception.ToString()
             }
-            if ($decoder.DecoderInformation.CodecId -eq [Windows.Graphics.Imaging.BitmapDecoder]::PngEncoderId)
+            finally
             {
-                # Skip PNG-encoded files
-                Write-Host " [Already PNG]"
-                continue
+                # Clean-up
+                if ($inputStream -ne $null) { [System.IDisposable]$inputStream.Dispose() }
+                if ($outputStream -ne $null) { [System.IDisposable]$outputStream.Dispose() }
             }
-            $bitmap = AwaitOperation ($decoder.GetSoftwareBitmapAsync()) ([Windows.Graphics.Imaging.SoftwareBitmap])
-
-            # Write SoftwareBitmap to output file
-            $outputFileName = $inputFile.Name -replace ($inputFile.FileType + "$"), ".png"
-
-            #$outputFileName = $inputFile.Name + ".png";
-            $outputFile = AwaitOperation ($inputFolder.CreateFileAsync($outputFileName, [Windows.Storage.CreationCollisionOption]::ReplaceExisting)) ([Windows.Storage.StorageFile])
-            $outputStream = AwaitOperation ($outputFile.OpenAsync([Windows.Storage.FileAccessMode]::ReadWrite)) ([Windows.Storage.Streams.IRandomAccessStream])
-            $encoder = AwaitOperation ([Windows.Graphics.Imaging.BitmapEncoder]::CreateAsync([Windows.Graphics.Imaging.BitmapEncoder]::PngEncoderId, $outputStream)) ([Windows.Graphics.Imaging.BitmapEncoder])
-            $encoder.SetSoftwareBitmap($bitmap)
-            $encoder.IsThumbnailGenerated = $false
-
-            # Do it
-            AwaitAction($encoder.FlushAsync())
-            Write-Host " -> $outputFileName"
-        }
-        catch
-        {
-            # Report full details
-            throw $_.Exception.ToString()
-        }
-        finally
-        {
-            # Clean-up
-            if ($inputStream -ne $null) { [System.IDisposable]$inputStream.Dispose() }
-            if ($outputStream -ne $null) { [System.IDisposable]$outputStream.Dispose() }
         }
     }
