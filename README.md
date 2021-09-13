@@ -1,14 +1,10 @@
-# ConvertTo-Jpeg
+# ConvertTo-Png
 
-> A PowerShell script that converts RAW (and other) image files to the widely-supported JPEG format
+> A PowerShell script that converts image files to PNG format
 
 ## Overview
 
-Many cameras - and many phones - save photos in a custom file format.
-Known as [RAW images](https://en.wikipedia.org/wiki/Raw_image_format), these files contain richer information than the widely-supported [JPEG format](https://en.wikipedia.org/wiki/JPEG) allows, but they are not as widely supported by tools.
-To easily view, edit, or share pictures, it can be handy to convert RAW images to the JPEG format.
-
-`ConvertTo-Jpeg.ps1` is a [PowerShell](https://en.wikipedia.org/wiki/PowerShell) script that uses the [Windows.Graphics.Imaging API](https://docs.microsoft.com/en-us/uwp/api/windows.graphics.imaging) to create a JPEG-encoded copy of each image that is passed to it.
+`ConvertTo-Png.ps1` is a [PowerShell](https://en.wikipedia.org/wiki/PowerShell) script that uses the [Windows.Graphics.Imaging API](https://docs.microsoft.com/en-us/uwp/api/windows.graphics.imaging) to create a PNG-encoded copy of each image that is passed to it.
 (The original file is not modified.)
 
 ## Related
@@ -22,39 +18,8 @@ To easily view, edit, or share pictures, it can be handy to convert RAW images t
 Passing parameters:
 
 ```PowerShell
-PS C:\T> .\ConvertTo-Jpeg.ps1 C:\T\Pictures\IMG_1234.HEIC C:\T\Pictures\IMG_5678.HEIC
-C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.jpg
-C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.jpg
-```
-
-Pipeline via `dir`:
-
-```PowerShell
-PS C:\T> dir C:\T\Pictures | .\ConvertTo-Jpeg.ps1
-C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.jpg
-C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.jpg
-C:\T\Pictures\Kitten.jpg [Already JPEG]
-C:\T\Pictures\Notes.txt [Unsupported]
-```
-
-Pipeline via `Get-ChildItem`:
-
-```PowerShell
-PS C:\T> Get-ChildItem C:\T\Pictures -Filter *.HEIC | .\ConvertTo-Jpeg.ps1
-C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.jpg
-C:\T\Pictures\IMG_5678.HEIC -> IMG_5678.HEIC.jpg
-```
-
-### Renaming Files
-
-Sometimes files have the wrong extension.
-To rename JPEG-encoded files that don't have the standard `.jpg` extension, use the `-FixExtensionIfJpeg` switch.
-(The `=>` in the output indicates that the file was renamed vs. converted.)
-
-```PowerShell
-PS C:\T> dir C:\T\Pictures\*.HEIC | .\ConvertTo-Jpeg.ps1 -FixExtensionIfJpeg
-C:\T\Pictures\IMG_1234 (Edited).HEIC => IMG_1234 (Edited).jpg
-C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.jpg
+PS C:\T> .\ConvertTo-Png.ps1 C:\T\Pictures\IMG_1234.HEIC
+C:\T\Pictures\IMG_1234.HEIC -> IMG_1234.HEIC.png
 ```
 
 ## Formats
