@@ -2,6 +2,8 @@
 
 > A PowerShell script that converts image files to PNG format
 
+This is a direct conversion from David Anson's [ConvertTo-Jpeg](https://github.com/DavidAnson/ConvertTo-Jpeg)
+
 ## Overview
 
 `ConvertTo-Png.ps1` is a [PowerShell](https://en.wikipedia.org/wiki/PowerShell) script that uses the [Windows.Graphics.Imaging API](https://docs.microsoft.com/en-us/uwp/api/windows.graphics.imaging) to create a PNG-encoded copy of each image that is passed to it.
@@ -9,6 +11,7 @@
 
 ## Related
 
+- [ConvertTo-Jpeg.ps1](https://github.com/DavidAnson/ConvertTo-Jpeg): A PowerShell script that converts RAW (and other) image files to the widely-supported JPEG format
 - [ConvertTo-Heic.ps1](https://github.com/DavidAnson/ConvertTo-Heic): A PowerShell script that converts image files to the efficient HEIC format
 
 ## Examples
