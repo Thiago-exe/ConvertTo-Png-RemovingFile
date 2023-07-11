@@ -83,7 +83,8 @@ Param (
 
                 # Do it
                 AwaitAction($encoder.FlushAsync())
-                Write-Host " -> $outputFileName"
+                Write-Host " (removed) -> $outputFileName"
+                Remove-Item $file
             }
             catch
             {
